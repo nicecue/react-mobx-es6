@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "baseUrl": "./",
+    "paths": {
+      "Shared/*": ["src/shared/*"] ,
+      "Store/*": ["src/store/*"],
+      "Translations/*": ["src/translations/*"],
+      "Routes/*": ["src/routes/*"]
+    },
+    "experimentalDecorators": true,
+    "allowJs": true
+  },
+  "exclude": ["node_modules", "dist"]
+}
