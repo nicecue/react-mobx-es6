@@ -11,7 +11,8 @@ import {
 } from 'mobx-react-router';
 import { 
   Router,
-  Route
+  Route,
+  Switch
  } from 'react-router';
 
 import {
@@ -19,7 +20,8 @@ import {
 } from 'Store';
 
 import {
-  Home
+  Home,
+  JointTest
 } from 'Routes';
 
 
@@ -46,7 +48,10 @@ class App extends Component {
     return (
       <Provider {...stores}>
         <Router history={history}>
-          <Route path="/" component={Home} />
+          <Switch>
+            <Route exact path="/" component={Home} />
+            <Route path="/joint" component={JointTest} />
+          </Switch>
         </Router>
       </Provider>
     )
