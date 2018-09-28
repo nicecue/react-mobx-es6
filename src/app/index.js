@@ -37,13 +37,6 @@ const stores = {
 
 @observer
 class App extends Component {
-  onBtn = (e) => {
-    testStore.add({
-      name: 'yongnam',
-      position: 'bottom of bottom'
-    });
-  }
-
   render() {
     return (
       <Provider {...stores}>
