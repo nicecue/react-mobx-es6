@@ -21,7 +21,8 @@ import {
 
 import {
   Home,
-  JointTest
+  JointTest,
+  CarouselTest
 } from 'Routes';
 
 
@@ -44,6 +45,7 @@ class App extends Component {
           <Switch>
             <Route exact path="/" component={Home} />
             <Route path="/joint" component={JointTest} />
+            <Route path="/carousel" component={CarouselTest} />
           </Switch>
         </Router>
       </Provider>

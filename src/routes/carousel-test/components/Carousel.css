@@ -1,0 +1,20 @@
+body {
+  height: 100%;
+  width: 100%;
+}
+
+.root {
+  height: 100%;
+  width: 100%;
+}
+
+.user {
+  border: 1px solid gray;
+}
+
+.container {
+  width: 300px;
+  height: 100px;
+  border: 1px solid red;
+  overflow-y: hidden;
+}
