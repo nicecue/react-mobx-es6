@@ -14,7 +14,9 @@ class Carousel extends Component {
     super(props);
 
     this.state = {
-      currentIdx: -1
+      currentIdx: -1,
+      animation: false,
+      offsetY: 0
     };
 
     this.items = new Map();
@@ -30,7 +32,14 @@ class Carousel extends Component {
 
   rollUp = () => {
     const { currentIdx } = this.state;
-    const currentChild = ReactDOM.findDOMNode(this.items.get(currentIdx));
+    const nextChild = ReactDOM.findDOMNode(this.items.get(currentIdx+1));
+
+    window.nextChild = nextChild;
+    const y = nextChild.offsetTop;
+    const height = nextChild.offsetHeight;
+
+
+    console.error('nextChild', nextChild);
   }
 
   rollDown = () => {
@@ -41,9 +50,14 @@ class Carousel extends Component {
     const {
       className,
       children,
-      maxShowItem
+      maxShowItem,
+      animateDuration
     } = this.props;
-    const { currentIdx } = this.state;
+    const { 
+      currentIdx,
+      animation,
+      offsetY
+    } = this.state;
 
     if (currentIdx < 0) {
       return null;
@@ -65,8 +79,9 @@ class Carousel extends Component {
 
     console.error(`${viewStart} - ${viewEnd}`);
 
+    let viewIdx = 0;
     const viewList = childs.slice(viewStart, viewEnd).map((child, idx) => {
-      return React.cloneElement(child, {});
+      return React.cloneElement(child, {ref: saveRefs(this.items, viewStart + idx)});
     })
     if (fakeViewListTailCnt) {
       const viewListTail = childs.slice(0, fakeViewListTailCnt).map((child, idx) => {
@@ -82,10 +97,19 @@ class Carousel extends Component {
     const fakeChildren = [];
     fakeChildren.push(viewList);
     fakeChildren.push(tail);
+
+    const containerStyle = {
+      transition: `transform ${animation? animateDuration: 0}ms ease-in-out`,
+      transform: `translateY(${offsetY}px)`
+    };
     
     return (
       <div className={`carousel-wrapper${className? ` ${className}`: ''}`}>
-        <div className="carousel-container" ref={r=>this.container=r}>
+        <div 
+          className="carousel-container" 
+          style={containerStyle}
+          ref={r=>this.container=r}
+        >
           { fakeChildren }
         </div>
       </div>
