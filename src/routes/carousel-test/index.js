@@ -33,7 +33,44 @@ const list = [
   {
     name: 'hhhh',
     age: 5
+  },
+  {
+    name: 'iiii',
+    age: 53
+  },
+  {
+    name: 'jjjj',
+    age: 39
+  },
+  {
+    name: 'kkkk',
+    age: 29
+  },
+  {
+    name: 'llll',
+    age: 84
+  },
+  {
+    name: 'mmm',
+    age: 34
+  },
+  {
+    name: 'nnnn',
+    age: 53
+  },
+  {
+    name: 'oooo',
+    age: 34
+  },
+  {
+    name: 'pppp',
+    age: 2
+  },
+  {
+    name: 'qqqq',
+    age: 28
   }
+  
 ]
 
 class User extends Component {
@@ -64,6 +101,18 @@ class CarouselPage extends Component {
     }
   }
 
+  onBtnStart = () => {
+    if (this.carousel) {
+      this.carousel.startRolling();
+    }
+  }
+
+  onBtnStop = () => {
+    if (this.carousel) {
+      this.carousel.stopRolling();
+    }
+  }
+
   renderUserList = () => {
     return list.map((user, idx) => {
       return <User name={user.name} age={user.age} key={idx} />
@@ -73,12 +122,19 @@ class CarouselPage extends Component {
   render() {
     const userList = this.renderUserList();
     return (
-      <div>
-        <Carousel ref={r=>this.carousel=r}>
+      <div className="carousel-page-wrapper" style={{height: '100%'}}>
+        <Carousel 
+          ref={r=>this.carousel=r}
+          
+        >
           { userList }
         </Carousel>
-        <button onClick={this.onBtnUp}>UP</button>
-        <button onClick={this.onBtnDown}>DOWN</button>
+        <div className="button-box" style={{position: 'absolute', bottom: '500px'}}>
+          <button onClick={this.onBtnUp}>UP</button>
+          <button onClick={this.onBtnDown}>DOWN</button>
+          <button onClick={this.onBtnStop}>STOP</button>
+          <button onClick={this.onBtnStart}>START</button>
+        </div>
       </div>
     );
   }

@@ -7,7 +7,9 @@ import './Carousel.css';
 class Carousel extends Component {
   static defaultProps = {
     animateDuration: 300,
-    maxShowItem: 4
+    rollingDuration: 500,
+    maxShowLine: 4,
+    maxItemInLine: 2
   }
 
   constructor(props) {
@@ -20,26 +22,69 @@ class Carousel extends Component {
     };
 
     this.items = new Map();
-    window.items = this.items;
+    this.timer = null;
   }
 
   componentDidMount() {
-    const childs = React.Children.toArray(this.props.children);
+    const {
+      children,
+      autoRolling
+    } = this.props;
+    const childs = React.Children.toArray(children);
     if (childs.length) {
       this.setState({currentIdx: 0});
+    }
+
+    if (autoRolling !== undefined) {
+      this.startRolling();
+    }
+  }
+
+  startRolling = () => {
+    const {
+      rollingDuration
+    } = this.props;
+    this.timer = setInterval(() => {
+      this.rollUp();
+    }, rollingDuration);
+  }
+
+  stopRolling = () => {
+    if (this.timer) {
+      clearInterval(this.timer);
     }
   }
 
   rollUp = () => {
+    const { 
+      children,
+      animateDuration,
+      maxItemInLine
+     } = this.props;
     const { currentIdx } = this.state;
-    const nextChild = ReactDOM.findDOMNode(this.items.get(currentIdx+1));
+    let nextIdx = (currentIdx + (1 * maxItemInLine ));
+    
+    const childs = React.Children.toArray(children);
+    if (nextIdx > childs.length - 1) {
+      nextIdx = 0;
+    }
 
-    window.nextChild = nextChild;
-    const y = nextChild.offsetTop;
+    const nextChild = ReactDOM.findDOMNode(this.items.get(nextIdx));
+    console.error(`   rollUp to => ${nextIdx}`);
     const height = nextChild.offsetHeight;
 
-
-    console.error('nextChild', nextChild);
+    this.setState({
+      offsetY: -(height),
+      animation: true
+    }, () => {
+      setTimeout(() => {
+        this.setState({
+          animation: false,
+          offsetY: 0,
+          currentIdx: nextIdx
+        })
+      }, animateDuration)
+    })
   }
 
   rollDown = () => {
@@ -50,7 +95,8 @@ class Carousel extends Component {
     const {
       className,
       children,
-      maxShowItem,
+      maxShowLine,
+      maxItemInLine,
       animateDuration
     } = this.props;
     const { 
@@ -63,40 +109,59 @@ class Carousel extends Component {
       return null;
     }
 
+    // TODO: list 의 갯수가 최대표시개수 보다 작을때는 그냥 리스트만 랜더하는 로직추가
+
     const childs = React.Children.toArray(children);
     const lastIdx = childs.length - 1;
 
-    const viewStart = currentIdx;
-    let viewEnd = viewStart + maxShowItem;
+    const viewStartIdx = currentIdx;
+    let viewEndIdx = viewStartIdx + (maxShowLine * maxItemInLine) - 1;
     let fakeViewListTailCnt = 0;
     
-    if (viewEnd > lastIdx) {
-      viewEnd = lastIdx;
-      fakeViewListTailCnt = viewEnd - lastIdx;
-    } else {
-      childs.slice(viewEnd + 1,)
+    let isNeedDivider = false;
+
+    // view 갯수가 모자라는 경우 체크
+    if (viewEndIdx > lastIdx) {
+      fakeViewListTailCnt = viewEndIdx - lastIdx;
+      viewEndIdx = lastIdx;
+      isNeedDivider = true;
     }
 
-    console.error(`${viewStart} - ${viewEnd}`);
+    const viewList = childs.slice(viewStartIdx, viewEndIdx + 1).map((child, idx) => {
+      return React.cloneElement(child, {ref: saveRefs(this.items, viewStartIdx + idx)});
+    });
 
-    let viewIdx = 0;
-    const viewList = childs.slice(viewStart, viewEnd).map((child, idx) => {
-      return React.cloneElement(child, {ref: saveRefs(this.items, viewStart + idx)});
-    })
+    // view 에 item 이 모자란 경우 0번 인덱스부터 모자란 개수만큼 채움
     if (fakeViewListTailCnt) {
       const viewListTail = childs.slice(0, fakeViewListTailCnt).map((child, idx) => {
-        return React.cloneElement(child, {});
+        return React.cloneElement(child, {ref: saveRefs(this.items, idx)});
       });
       viewList.push(viewListTail);
+      if (isNeedDivider) {
+        viewList.push(React.createElement('div', {}));
+      }
     }
 
-    const tailIdx = fakeViewListTailCnt? fakeViewListTailCnt: viewEnd + 1;
+    // 화면 영역밖의 tail 은 모자랄 경우는 채워진 갯수 뒤의 item이고 
+    // 아니라면 viewlist 의 다음 item 임
+    let tailStartIdx = fakeViewListTailCnt? fakeViewListTailCnt: viewEndIdx + 1;
+    if (tailStartIdx > lastIdx) {
+      tailStartIdx = tailStartIdx - lastIdx - 1;
+    }
+    let tailEndIdx = tailStartIdx + maxItemInLine - 1;
+    if (tailEndIdx > lastIdx) {
+      tailEndIdx = lastIdx;
+    }
+      
+    const tails = childs.slice(tailStartIdx, tailEndIdx+1).map((child, idx) => {
+      return React.cloneElement(child, {ref: saveRefs(this.items, tailStartIdx + idx)});
+    })
 
-    const tail = React.cloneElement(childs[tailIdx], {});
+    console.error(`${animation?'   ':''}[${viewStartIdx} - ${viewEndIdx}${fakeViewListTailCnt?`{0 - ${fakeViewListTailCnt-1}}`: ''}][${tailStartIdx} - ${tailEndIdx}]: curIdx => ${currentIdx}, top => ${offsetY}, animate => ${animation?'on': 'off'}`);
 
     const fakeChildren = [];
     fakeChildren.push(viewList);
-    fakeChildren.push(tail);
+    fakeChildren.push(tails);
 
     const containerStyle = {
       transition: `transform ${animation? animateDuration: 0}ms ease-in-out`,
