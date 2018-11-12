@@ -74,6 +74,11 @@ const list = [
 ]
 
 class User extends Component {
+  // componentWillUnmount() {
+  //   const { idx, name } = this.props;
+  //   console.error(`[${idx}:${name}] is unmounted`);
+  // }
+
   render() {
     const {
       name,
@@ -115,7 +120,7 @@ class CarouselPage extends Component {
 
   renderUserList = () => {
     return list.map((user, idx) => {
-      return <User name={user.name} age={user.age} key={idx} />
+      return <User name={user.name} age={user.age} key={idx} idx={idx}/>
     });
   }
 
@@ -123,12 +128,13 @@ class CarouselPage extends Component {
     const userList = this.renderUserList();
     return (
       <div className="carousel-page-wrapper" style={{height: '100%'}}>
-        <Carousel 
-          ref={r=>this.carousel=r}
-          
-        >
-          { userList }
-        </Carousel>
+        <div className="carousel-outter-container" style={{overflow: 'hidden'}}>
+          <Carousel 
+            ref={r=>this.carousel=r}
+          >
+            { userList }
+          </Carousel>
+        </div>
         <div className="button-box" style={{position: 'absolute', bottom: '500px'}}>
           <button onClick={this.onBtnUp}>UP</button>
           <button onClick={this.onBtnDown}>DOWN</button>

@@ -38,6 +38,8 @@ class Carousel extends Component {
     if (autoRolling !== undefined) {
       this.startRolling();
     }
+
+    window.items = this.items;
   }
 
   startRolling = () => {
@@ -70,7 +72,7 @@ class Carousel extends Component {
     }
 
     const nextChild = ReactDOM.findDOMNode(this.items.get(nextIdx));
-    console.error(`   rollUp to => ${nextIdx}`);
+    // console.error(`   rollUp to => ${nextIdx}`);
     const height = nextChild.offsetHeight;
 
     this.setState({
@@ -128,18 +130,21 @@ class Carousel extends Component {
     }
 
     const viewList = childs.slice(viewStartIdx, viewEndIdx + 1).map((child, idx) => {
-      return React.cloneElement(child, {ref: saveRefs(this.items, viewStartIdx + idx)});
+      // return React.cloneElement(child, {ref: saveRefs(this.items, viewStartIdx + idx), key: child.props.idx});
+      return React.cloneElement(child, {ref: saveRefs(this.items, child.props.idx), key: child.props.idx});
     });
+
+    if (isNeedDivider) {
+      viewList.push(React.createElement('div', {className: "divier", key: 'divier'}));
+    }
 
     // view 에 item 이 모자란 경우 0번 인덱스부터 모자란 개수만큼 채움
     if (fakeViewListTailCnt) {
       const viewListTail = childs.slice(0, fakeViewListTailCnt).map((child, idx) => {
-        return React.cloneElement(child, {ref: saveRefs(this.items, idx)});
+        return React.cloneElement(child, {ref: saveRefs(this.items, child.props.idx), key: child.props.idx});
       });
-      viewList.push(viewListTail);
-      if (isNeedDivider) {
-        viewList.push(React.createElement('div', {}));
-      }
+      viewList.push(...viewListTail);
+      
     }
 
     // 화면 영역밖의 tail 은 모자랄 경우는 채워진 갯수 뒤의 item이고 
@@ -154,30 +159,33 @@ class Carousel extends Component {
     }
       
     const tails = childs.slice(tailStartIdx, tailEndIdx+1).map((child, idx) => {
-      return React.cloneElement(child, {ref: saveRefs(this.items, tailStartIdx + idx)});
+      // return React.cloneElement(child, {ref: saveRefs(this.items, tailStartIdx + idx),  key: child.props.idx});
+      return React.cloneElement(child, {ref: saveRefs(this.items, child.props.idx), key: child.props.idx});
     })
 
-    console.error(`${animation?'   ':''}[${viewStartIdx} - ${viewEndIdx}${fakeViewListTailCnt?`{0 - ${fakeViewListTailCnt-1}}`: ''}][${tailStartIdx} - ${tailEndIdx}]: curIdx => ${currentIdx}, top => ${offsetY}, animate => ${animation?'on': 'off'}`);
+    // console.error(`${animation?'   ':''}[${viewStartIdx} - ${viewEndIdx}${fakeViewListTailCnt?`{0 - ${fakeViewListTailCnt-1}}`: ''}][${tailStartIdx} - ${tailEndIdx}]: curIdx => ${currentIdx}, top => ${offsetY}, animate => ${animation?'on': 'off'}`);
 
-    const fakeChildren = [];
-    fakeChildren.push(viewList);
-    fakeChildren.push(tails);
+    viewList.push(...tails);
+
+    // const fakeChildren = [];
+    // fakeChildren.push(viewList);
+    // fakeChildren.push(tails);
 
     const containerStyle = {
       transition: `transform ${animation? animateDuration: 0}ms ease-in-out`,
       transform: `translateY(${offsetY}px)`
     };
-    
+
     return (
-      <div className={`carousel-wrapper${className? ` ${className}`: ''}`}>
+      // <div className={`carousel-wrapper${className? ` ${className}`: ''}`}>
         <div 
           className="carousel-container" 
           style={containerStyle}
           ref={r=>this.container=r}
         >
-          { fakeChildren }
+          { viewList }
         </div>
-      </div>
+      // </div>
     );
   }
 }
